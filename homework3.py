@@ -15,7 +15,7 @@ def run():
     
     # Create initial population
     # TODO: Adjust population based on problem size
-    population_size = 20000
+    population_size = 4000
     town.population = generate_initial_population(population_size, town.number_of_cities)
 
     best_individual : Individual = []
@@ -23,19 +23,16 @@ def run():
 
     # Create a loop for each generation
     # TODO: Adjust number of generations based on problem size
-    number_of_generations = 100
+    number_of_generations = 200
 
     i = 0
 
     run_loop_start_time = time.time()
     for _ in range(number_of_generations):
         # Get next population and best individual in current population
-        start_time = time.time()
         town.population, new_best_individual, new_min_cost = get_next_population_and_best_individual(town)
-        end_time = time.time()
 
-        if _ % 10 == 0:
-            print(f"Time taken for selection: {end_time - start_time} seconds")
+        # print("Population size after selection:", len(town.population))
 
         if new_min_cost < min_cost:
             i = 0
@@ -46,16 +43,14 @@ def run():
             if i > 100:
                 break
 
-        start_time = time.time()
         # Crossover and Mutation
         town.population = crossover_and_mutate_population(town, mutation_rate=0.01)
-        end_time = time.time()
+        # print("Population size after crossover and mutation:", len(town.population))
 
         if _ % 10 == 0:
-            print(f"Time taken for crossover and mutation: {end_time - start_time} seconds")
+            end_time = time.time()
+            print(f"{_} Generation done. Time taken so far: {end_time - run_loop_start_time} seconds. Best cost: {min_cost}")
 
-        if _ % 10 == 0:
-            print(f"Generation {_} done. Best cost so far {min_cost}")
     run_loop_end_time = time.time()
     print(f"Time taken: {run_loop_end_time - run_loop_start_time} seconds")
     final_path = [town.city_map[i] for i in best_individual]

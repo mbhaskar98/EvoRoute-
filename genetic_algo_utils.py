@@ -30,8 +30,7 @@ def get_score_for_individual(individual: Individual, town: Town) -> float:
     for i in range(len(individual)):
         # Add distance between current and previous city,
         # and between first and last city for a complete loop
-        total_distance += town.distance_between_cities[individual[i]
-                                                       ][individual[(i - 1)]]
+        total_distance += town.distance_between_cities[individual[i]][individual[(i - 1)]]
     return total_distance
 
 
@@ -146,7 +145,6 @@ def crossover_and_mutate_population(town: Town, mutation_rate : float = 0.01) ->
 
             new_population.append(new_individual1)
             new_population.append(new_individual2)
-            break
 
     return new_population
 
