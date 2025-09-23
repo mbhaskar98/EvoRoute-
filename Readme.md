@@ -8,5 +8,5 @@
 **Links for optimizations**
 1. [Reddit](https://www.reddit.com/r/Python/comments/k8c3jd/ive_made_a_genetic_algorithm_for_the_travelling/)
 2. [Stack Overflow](https://stackoverflow.com/questions/47679966/how-can-i-improve-this-genetic-algorithm-for-the-tsp)
-
+3. [Stack-Overflow (best optimization)](https://stackoverflow.com/questions/33597326/why-wont-my-genetic-algorithm-converge-or-at-least-get-a-little-better)
 

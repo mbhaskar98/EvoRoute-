@@ -8,6 +8,24 @@ from genetic_algo_utils import crossover_and_mutate_population, generate_initial
 
 DEBUG = True
 
+def get_generations(num_cities: int) -> int:
+    """
+    Exponential decay function to determine number of generations based on number of cities.
+    Starts at 100 generations for upto 100 cities, and exponentially approaches 10 generations
+    """
+    if num_cities < 100:
+        return 100
+
+    # Parameters for decay function
+    A = 150   # Starting amplitude
+    B = 0.015  # Decay speed, keep it high
+    C = 10    # Asymptotic floor at 10 generations for large city counts
+
+    # Calculate generations using the exponential decay formula
+    gens = int(max(C, A * math.exp(-B * (num_cities - 100)) + C))
+
+    return gens
+
 
 def run():
     # To make results consistent
@@ -18,73 +36,59 @@ def run():
     town = Town(cities)
 
     # Create initial population
-    # TODO: Adjust population based on problem size
     population_size = 1000
     town.population = generate_initial_population(
         population_size, town.number_of_cities)
 
+    # Initialize variables to track the best solution
     best_individual: Individual = []
     min_cost = float('inf')
     prev_min_cost = float('inf')
 
+    # Determine number of generations based on number of cities
+    number_of_generations = get_generations(town.number_of_cities)
 
-    delete_me_factor = 50
-
-    base_generations = 200 - delete_me_factor
-    number_of_generations = base_generations
-    city_threshold = 150 - delete_me_factor
-    min_generations = 75 - delete_me_factor
-    decay_rate = 5
-
-    if len(cities) > city_threshold:
-        # Apply logarithmic decay to reduce generations for larger cities
-        # Generations = base - log(n - threshold + 1) * decay_rate
-        decay = math.log(len(cities) - city_threshold + 1)
-        number_of_generations = int(
-            max(min_generations, base_generations - decay * decay_rate))
-    else:
-        number_of_generations = base_generations
-
-
-    stangnation_count = 0
+    # Counter to track subsequent generations without improvement
+    stagnation_count = 0
     # Stop the loop if the counter exceeds this threshold
     max_no_improvement_generations = 20
     # Increase mutation rate if no improvement for these many generations
     base_mutation_rate = 0.01
+    max_mutation_rate = 0.03
     mutation_rate = base_mutation_rate
     max_stagnation_count = max_no_improvement_generations/2
 
+
     if DEBUG:
-        print(f"Number of generations set to: {number_of_generations}")
+        print(f"Number of generations set to: {number_of_generations} for {town.number_of_cities} cities")
         run_loop_start_time = time.time()
 
     # Create a loop for each generation
     for generation in range(number_of_generations):
         # Get next population and best individual in current population
-        k_min = 5
-        k_max = 9
-        alpha = 0.05
-        tournament_size = min(k_max, k_min + alpha * generation)
         town.population, new_best_individual, new_min_cost = get_next_population_and_best_individual(
-            town, tournament_size=int(tournament_size))
+            town, generation, min_tournament_size=5, max_tournament_size=9)
 
         # if DEBUG:
         # print("Population size after selection:", len(town.population))
 
+        # Update best individual and cost if improved
         if new_min_cost < min_cost:
             min_cost = new_min_cost
             best_individual = new_best_individual
 
+        # Update stagnation counter
         if new_min_cost < prev_min_cost:
             prev_min_cost = new_min_cost
-            stangnation_count = 0
+            stagnation_count = 0
         else:
-            stangnation_count += 1
-            if stangnation_count > max_no_improvement_generations:
+            stagnation_count += 1
+            if stagnation_count > max_no_improvement_generations:
                 break
 
-        if stangnation_count > max_stagnation_count:
-            mutation_rate *= 1.5
+        # Adjust mutation rate based on stagnation
+        if stagnation_count > max_stagnation_count:
+            mutation_rate = max(1.5*mutation_rate, max_mutation_rate)
         else:
             mutation_rate = base_mutation_rate
 
